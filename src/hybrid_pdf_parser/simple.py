@@ -86,12 +86,12 @@ class PDFExtractor:
         if custom_config:
             config_data = custom_config
             # Merge with defaults
-            config = PipelineConfig.from_yaml("src/hybrid_pdf_parser/config/default.yaml")
+            config = self._load_default_config()
             config_dict = config.model_dump()
             _deep_merge(config_dict, custom_config)
             self._config = PipelineConfig.model_validate(config_dict)
         else:
-            self._config = PipelineConfig.from_yaml("src/hybrid_pdf_parser/config/default.yaml")
+            self._config = self._load_default_config()
 
         # Setup backends
         if provider == "openai":
@@ -114,6 +114,22 @@ class PDFExtractor:
         self._configured = True
 
         return self
+
+    @staticmethod
+    def _load_default_config() -> PipelineConfig:
+        """Load default config from package data."""
+        from pathlib import Path
+        import importlib.resources
+
+        try:
+            # Try to load from package resources
+            with importlib.resources.files("hybrid_pdf_parser.config") / "default.yaml" as config_path:
+                return PipelineConfig.from_yaml(config_path)
+        except (TypeError, AttributeError):
+            # Fallback for older Python versions or when running from source
+            from hybrid_pdf_parser.config import schema
+            config_path = Path(schema.__file__).parent / "default.yaml"
+            return PipelineConfig.from_yaml(config_path)
 
     def extract(
         self,
