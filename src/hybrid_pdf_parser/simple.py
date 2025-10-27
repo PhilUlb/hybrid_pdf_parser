@@ -120,12 +120,15 @@ class PDFExtractor:
         """Load default config from package data."""
         from pathlib import Path
         import importlib.resources
+        import yaml
 
         try:
             # Try to load from package resources
-            with importlib.resources.files("hybrid_pdf_parser.config") / "default.yaml" as config_path:
-                return PipelineConfig.from_yaml(config_path)
-        except (TypeError, AttributeError):
+            package = importlib.resources.files("hybrid_pdf_parser.config")
+            with (package / "default.yaml").open("rb") as config_file:
+                data = yaml.safe_load(config_file)
+                return PipelineConfig.model_validate(data)
+        except Exception:
             # Fallback for older Python versions or when running from source
             from hybrid_pdf_parser.config import schema
             config_path = Path(schema.__file__).parent / "default.yaml"
