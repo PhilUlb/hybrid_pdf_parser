@@ -1,0 +1,8 @@
+# MANIFEST.in
+include LICENSE
+include README.md
+include pyproject.toml
+recursive-include src/hybrid_pdf_parser *.py
+recursive-include src/hybrid_pdf_parser *.yaml
+recursive-include src/hybrid_pdf_parser *.yml
+
