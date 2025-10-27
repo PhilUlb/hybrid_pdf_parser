@@ -82,36 +82,40 @@ class PDFExtractor:
         if adjudicator_model is None:
             adjudicator_model = "gpt-4o" if provider == "openai" else "llama3.1"
 
-        # Load or create config
-        if custom_config:
-            config_data = custom_config
-            # Merge with defaults
-            config = self._load_default_config()
-            config_dict = config.model_dump()
-            _deep_merge(config_dict, custom_config)
-            self._config = PipelineConfig.model_validate(config_dict)
-        else:
-            self._config = self._load_default_config()
+        try:
+            # Load or create config
+            if custom_config:
+                config_data = custom_config
+                # Merge with defaults
+                config = self._load_default_config()
+                config_dict = config.model_dump()
+                _deep_merge(config_dict, custom_config)
+                self._config = PipelineConfig.model_validate(config_dict)
+            else:
+                self._config = self._load_default_config()
 
-        # Setup backends
-        if provider == "openai":
-            api_key = api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise ValueError(
-                    "OPENAI_API_KEY not found. Set it in config(), .env file, or environment variable."
-                )
-            self._vision_backend = OpenAIVisionBackend(model=vision_model, api_key=api_key)
-            self._adjudicator_backend = OpenAIAdjudicatorBackend(model=adjudicator_model, api_key=api_key)
+            # Setup backends
+            if provider == "openai":
+                api_key = api_key or os.getenv("OPENAI_API_KEY")
+                if not api_key:
+                    raise ValueError(
+                        "OPENAI_API_KEY not found. Set it in config(), .env file, or environment variable."
+                    )
+                self._vision_backend = OpenAIVisionBackend(model=vision_model, api_key=api_key)
+                self._adjudicator_backend = OpenAIAdjudicatorBackend(model=adjudicator_model, api_key=api_key)
 
-        elif provider == "ollama":
-            base_url = ollama_base_url or os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
-            self._vision_backend = OllamaVisionBackend(model=vision_model, api_base=base_url)
-            self._adjudicator_backend = OllamaAdjudicatorBackend(model=adjudicator_model, api_base=base_url)
+            elif provider == "ollama":
+                base_url = ollama_base_url or os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
+                self._vision_backend = OllamaVisionBackend(model=vision_model, api_base=base_url)
+                self._adjudicator_backend = OllamaAdjudicatorBackend(model=adjudicator_model, api_base=base_url)
 
-        else:
-            raise ValueError(f"Unknown provider: {provider}. Must be 'openai' or 'ollama'")
+            else:
+                raise ValueError(f"Unknown provider: {provider}. Must be 'openai' or 'ollama'")
 
-        self._configured = True
+            self._configured = True
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to configure PDFExtractor: {e}") from e
 
         return self
 
@@ -122,17 +126,24 @@ class PDFExtractor:
         import importlib.resources
         import yaml
 
+        # First try: package resources (for installed packages)
         try:
-            # Try to load from package resources
             package = importlib.resources.files("hybrid_pdf_parser.config")
             with (package / "default.yaml").open("rb") as config_file:
                 data = yaml.safe_load(config_file)
                 return PipelineConfig.model_validate(data)
-        except Exception:
-            # Fallback for older Python versions or when running from source
-            from hybrid_pdf_parser.config import schema
-            config_path = Path(schema.__file__).parent / "default.yaml"
-            return PipelineConfig.from_yaml(config_path)
+        except Exception as e1:
+            # Second try: relative to schema.py (for dev/source)
+            try:
+                from hybrid_pdf_parser.config import schema
+                config_path = Path(schema.__file__).parent / "default.yaml"
+                if config_path.exists():
+                    return PipelineConfig.from_yaml(config_path)
+            except Exception as e2:
+                pass
+            
+            # If all else fails, create config with defaults
+            return PipelineConfig()
 
     def extract(
         self,
