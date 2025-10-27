@@ -12,16 +12,39 @@ A production-ready Python library for extracting structured Markdown from PDF do
 
 ## Installation
 
-Install from the project directory:
+### Install from GitHub
+
+Install directly from the repository:
 
 ```bash
-pip install -e .
+# Basic installation
+pip install git+https://github.com/PhilUlb/hybrid_pdf_parser.git@main
+
+# With optional extras
+pip install "git+https://github.com/PhilUlb/hybrid_pdf_parser.git@main#egg=hybrid-pdf-parser[notebook]"  # Jupyter support
+pip install "git+https://github.com/PhilUlb/hybrid_pdf_parser.git@main#egg=hybrid-pdf-parser[dev]"     # Dev tools
 ```
 
-Or install with development dependencies:
+Or add to your `requirements.txt`:
+
+```txt
+git+https://github.com/PhilUlb/hybrid_pdf_parser.git@main
+```
+
+### Local Development
+
+For local development:
 
 ```bash
-pip install -e ".[dev]"
+# Clone the repository
+git clone https://github.com/PhilUlb/hybrid_pdf_parser.git
+cd hybrid_pdf_parser
+
+# Install in editable mode
+pip install -e .
+
+# With development dependencies
+pip install -e ".[dev,notebook]"
 ```
 
 ## Quick Start
