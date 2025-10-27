@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hybrid-pdf-parser"
+version = "0.1.0"
+description = "A hybrid PDF parser package with dual extraction (Docling + Vision OCR)"
+requires-python = ">=3.11"
+authors = [
+    {name = "Philipp Ulbrich"}
+]
+readme = "README.md"
+license = {text = "see LICENSE file"}
+dependencies = [
+    "pymupdf>=1.23.0",
+    "pillow>=10.0.0",
+    "docling>=1.0.0",
+    "rapidfuzz>=3.0.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.25.0",
+    "tenacity>=8.2.0",
+    "pyyaml>=6.0",
+    "openai>=1.0.0",
+    "blingfire>=0.1.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+    "python-dotenv>=1.0.0",
+]
+notebook = [
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+    "ipython>=8.0.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

@@ -1,0 +1,28 @@
+# Default configuration for PDF extraction pipeline
+
+render:
+  dpi: 250
+  max_long_edge: 2400
+  format: png
+  alpha: false
+
+heuristics:
+  score_margin: 0.15
+  ambiguity_band: 0.05
+
+backend:
+  provider: openai
+  vision_model: gpt-4o
+  adjudicator_model: gpt-4o
+  timeout: 60
+  max_retries: 3
+
+concurrency:
+  max_workers: 4
+  batch_size: 10
+
+cache:
+  enabled: true
+  image_cache_dir: .cache/images
+  vision_cache_dir: .cache/vision
+
